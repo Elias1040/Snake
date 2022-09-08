@@ -5,8 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Snake"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-
-    </Grid>
+        Title="MainWindow" SizeToContent="WidthAndHeight" ContentRendered="Window_ContentRendered" ResizeMode="NoResize">
+    <Border BorderThickness="5" BorderBrush="DarkGreen">
+        <Canvas Name="Arena" ClipToBounds="True" Width="460" Height="460">
+            
+        </Canvas>
+    </Border>
 </Window>
