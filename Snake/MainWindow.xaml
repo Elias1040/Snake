@@ -5,10 +5,24 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Snake"
         mc:Ignorable="d"
-        Title="MainWindow" SizeToContent="WidthAndHeight" ContentRendered="Window_ContentRendered" ResizeMode="NoResize">
-    <Border BorderThickness="5" BorderBrush="DarkGreen">
-        <Canvas Name="Arena" ClipToBounds="True" Width="460" Height="460">
-            
-        </Canvas>
-    </Border>
+        Title="MainWindow" SizeToContent="WidthAndHeight" ContentRendered="Window_ContentRendered" ResizeMode="NoResize"
+        KeyUp="Window_KeyUp">
+
+    <Canvas ClipToBounds="True" Width="470" Height="490">
+        <StackPanel>
+            <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="120"/>
+            </Grid.ColumnDefinitions>
+            <Button Width="100" Grid.Column="0" Click="SaveScore_Click">Save score</Button>
+            <Button Width="100" Grid.Column="1" Click="LoadScore_Click">Load score</Button>
+        </Grid>
+        <Border BorderThickness="5" BorderBrush="DarkGreen">
+            <Canvas Name="Arena" Width="460" Height="460" ClipToBounds="True">
+
+            </Canvas>
+        </Border>
+        </StackPanel>
+    </Canvas>
 </Window>
