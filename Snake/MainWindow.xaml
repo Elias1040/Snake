@@ -8,21 +8,59 @@
         Title="MainWindow" SizeToContent="WidthAndHeight" ContentRendered="Window_ContentRendered" ResizeMode="NoResize"
         KeyUp="Window_KeyUp">
 
-    <Canvas ClipToBounds="True" Width="470" Height="490">
+    <Canvas ClipToBounds="True" Width="450" Height="490">
+        <!--<StackPanel>-->
+        <!--<Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="120"/>
+                    <ColumnDefinition Width="120"/>
+                </Grid.ColumnDefinitions>
+                <Button Width="100" Grid.Column="0" Click="SaveScore_Click">Save score</Button>
+                <Button Width="100" Grid.Column="1" Click="LoadScore_Click">Load score</Button>
+            </Grid>-->
         <StackPanel>
-            <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="120"/>
-                <ColumnDefinition Width="120"/>
-            </Grid.ColumnDefinitions>
-            <Button Width="100" Grid.Column="0" Click="SaveScore_Click">Save score</Button>
-            <Button Width="100" Grid.Column="1" Click="LoadScore_Click">Load score</Button>
-        </Grid>
-        <Border BorderThickness="5" BorderBrush="DarkGreen">
-            <Canvas Name="Arena" Width="460" Height="460" ClipToBounds="True">
+            <Grid Background="Black">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0" FontSize="18" Height="30" Width="110" Click="SaveState_Click">Save</Button>
+                <TextBlock x:Name="Score" FontSize="30" TextAlignment="Center" Grid.Column="1" Foreground="White"></TextBlock>
+                <TextBlock x:Name="Time" FontSize="30" Grid.Column="2" Foreground="White"></TextBlock>
+            </Grid>
+            <Border BorderThickness="5" BorderBrush="DarkGreen">
+                <Canvas Name="Arena" Width="440" Height="440" ClipToBounds="True">
 
-            </Canvas>
-        </Border>
+                </Canvas>
+            </Border>
         </StackPanel>
+        <Grid x:Name="MainMenu" Width="450" Height="490">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="75"/>
+                <ColumnDefinition Width="75"/>
+                <ColumnDefinition Width="75"/>
+                <ColumnDefinition Width="75"/>
+                <ColumnDefinition Width="75"/>
+                <ColumnDefinition Width="75"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="55"/>
+                <RowDefinition Height="55"/>
+                <RowDefinition Height="55"/>
+                <RowDefinition Height="55"/>
+                <RowDefinition Height="55"/>
+                <RowDefinition Height="55"/>
+                <RowDefinition Height="55"/>
+                <RowDefinition Height="55"/>
+            </Grid.RowDefinitions>
+            <Image Grid.Row="1" Grid.ColumnSpan="6" Grid.RowSpan="9" Source="C:\Users\elias\Downloads\background.png"></Image>
+
+            <TextBlock Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2" TextWrapping="Wrap" TextAlignment="Center" FontSize="20">Main Menu</TextBlock>
+            <Button Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="2" Click="StartGame_Click">Start Game</Button>
+            <Button Grid.Row="5" Grid.Column="2" Grid.ColumnSpan="2" Click="LoadScore_Click">Load Game</Button>
+        </Grid>
+        <!--</StackPanel>-->
     </Canvas>
 </Window>
