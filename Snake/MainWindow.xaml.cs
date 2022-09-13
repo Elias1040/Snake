@@ -23,6 +23,7 @@ using System.Xml;
 using System.Runtime.CompilerServices;
 using System.Data;
 using System.Collections.ObjectModel;
+using System.Media;
 
 namespace Snake
 {
@@ -42,6 +43,12 @@ namespace Snake
         private Snakefood snakeFood;
         private int currentScore;
         private bool newGame;
+        private SoundPlayer backgroundSound;
+        private SoundPlayer respawnSound;
+        private SoundPlayer deadSound;
+        private SoundPlayer turnSound;
+        private SoundPlayer eatSound;
+
         public ViewModel ViewModel { get; set; }
         private Highscore highscore;
 
@@ -66,6 +73,11 @@ namespace Snake
             snakeHeadBrush = Brushes.Yellow;
             foodBrush = Brushes.Red;
             currentScore = 0;
+            backgroundSound = new(@"C:\Users\elias\source\repos\Snake\Snake\BackgroundMusic.wav");
+            respawnSound = new(@"C:\Users\elias\source\repos\Snake\Snake\ResetSound.wav");
+            deadSound = new(@"C:\Users\elias\source\repos\Snake\Snake\DeadSound.wav");
+            turnSound = new(@"C:\Users\elias\source\repos\Snake\Snake\TurnSound.wav");
+            eatSound = new(@"C:\Users\elias\source\repos\Snake\Snake\EatSound.wav");
             gameTimer.Tick += GameTimer_Tick;
         }
         public enum SnakeDirection { Left, Right, Up, Down }
@@ -73,7 +85,6 @@ namespace Snake
         private void Window_ContentRendered(object sender, EventArgs e)
         {
             DrawArena();
-            StartNewGame();
         }
         private void StartNewGame()
         {
@@ -88,9 +99,10 @@ namespace Snake
                     Position = new(SnakeSquareSize * 5, SnakeSquareSize * 5),
                 });
                 gameTimer.Interval = TimeSpan.FromMilliseconds(SnakeStartSpeed);
+                PlaySounds(respawnSound);
+                DrawSnake();
+                DrawSnakeFood();
             }
-            DrawSnake();
-            DrawSnakeFood();
         }
         private void GameTimer_Tick(object sender, EventArgs e)
         {
@@ -100,6 +112,7 @@ namespace Snake
         private void EndGame()
         {
             gameTimer.IsEnabled = false;
+            PlaySounds(deadSound);
             foreach (Snakepart snakepart in snakeparts)
             {
                 if (snakepart.UiElement != null)
@@ -137,11 +150,11 @@ namespace Snake
             currentScore++;
             int interval = Math.Max(SnakeSpeedThreshold, (int)gameTimer.Interval.TotalMilliseconds - (currentScore * 2));
             gameTimer.Interval = TimeSpan.FromMilliseconds(interval);
+            PlaySounds(eatSound);
             Arena.Children.Remove(snakeFood.UiElement);
             DrawSnakeFood();
             UpdateGameStatus();
         }
-
 
         private void Window_KeyUp(object sender, KeyEventArgs e)
         {
@@ -182,6 +195,7 @@ namespace Snake
                     if (gameTimer.IsEnabled)
                     {
                         gameTimer.IsEnabled = false;
+                        backgroundSound.Stop();
                         Menu.Visibility = Visibility.Visible;
                         MainMenu.Visibility = Visibility.Visible;
                     }
@@ -189,6 +203,7 @@ namespace Snake
                     {
                         Menu.Visibility = Visibility.Collapsed;
                         HighScoreScreen.Visibility = Visibility.Collapsed;
+                        backgroundSound.Play();
                         gameTimer.IsEnabled = true;
                     }
                     break;
@@ -196,6 +211,7 @@ namespace Snake
             if (direction != snakeDirection && gameTimer.IsEnabled)
             {
                 MoveSnake();
+                //PlaySounds(turnSound);
             }
 
         }
@@ -321,12 +337,13 @@ namespace Snake
                 DrawSnake();
                 newGame = false;
                 Menu.Visibility = Visibility.Collapsed;
+                PlaySounds(respawnSound);
                 gameTimer.IsEnabled = true;
             }
-            else
-            {
-                newGame = true;
-            }
+            //else
+            //{
+            //    newGame = true;
+            //}
         }
         private void SaveState_Click(object sender, RoutedEventArgs e)
         {
@@ -343,6 +360,14 @@ namespace Snake
             SaveState save = new();
             save.WriteScore(clusterfuck);
             gameTimer.Start();
+        }
+
+
+        private void PlaySounds(SoundPlayer sound)
+        {
+            sound.LoadAsync();
+            backgroundSound.LoadAsync();
+            Task.Run(() => { sound.PlaySync(); backgroundSound.PlayLooping(); });
         }
 
 
