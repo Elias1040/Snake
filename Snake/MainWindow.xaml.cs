@@ -22,6 +22,7 @@ using Snake.DAL;
 using System.Xml;
 using System.Runtime.CompilerServices;
 using System.Data;
+using System.Collections.ObjectModel;
 
 namespace Snake
 {
@@ -40,24 +41,31 @@ namespace Snake
         private int snakeLength;
         private Snakefood snakeFood;
         private int currentScore;
+        private bool newGame;
+        public ViewModel ViewModel { get; set; }
+        private Highscore highscore;
 
         const int SnakeSquareSize = 20;
         const int SnakeStartLength = 3;
-        const int SnakeStartSpeed = 400;
+        const int SnakeStartSpeed = 200;
         const int SnakeSpeedThreshold = 100;
 
         public MainWindow()
         {
             InitializeComponent();
-            snakeparts = new List<Snakepart>();
+            highscore = new();
+            ViewModel = new ViewModel(highscore.GetScores());
+            this.DataContext = ViewModel;
+            snakeparts = new();
+            gameTimer = new();
+            snakeFood = new();
+            random = new();
+            newGame = true;
             snakeDirection = SnakeDirection.Right;
             snakeBodyBrush = Brushes.LightBlue;
             snakeHeadBrush = Brushes.Yellow;
             foodBrush = Brushes.Red;
-            gameTimer = new DispatcherTimer();
-            random = new Random();
             currentScore = 0;
-            snakeFood = new Snakefood();
             gameTimer.Tick += GameTimer_Tick;
         }
         public enum SnakeDirection { Left, Right, Up, Down }
@@ -69,14 +77,18 @@ namespace Snake
         }
         private void StartNewGame()
         {
-            ClearArena();
-            snakeLength = SnakeStartLength;
-            snakeDirection = SnakeDirection.Right;
-            snakeparts.Add(new()
+            if (newGame)
             {
-                Position = new(SnakeSquareSize * 5, SnakeSquareSize * 5),
-            });
-            gameTimer.Interval = TimeSpan.FromMilliseconds(SnakeStartSpeed);
+                ClearArena();
+                newGame = false;
+                snakeLength = SnakeStartLength;
+                snakeDirection = SnakeDirection.Right;
+                snakeparts.Add(new()
+                {
+                    Position = new(SnakeSquareSize * 5, SnakeSquareSize * 5),
+                });
+                gameTimer.Interval = TimeSpan.FromMilliseconds(SnakeStartSpeed);
+            }
             DrawSnake();
             DrawSnakeFood();
         }
@@ -95,9 +107,11 @@ namespace Snake
                     Arena.Children.Remove(snakepart.UiElement);
                 }
             }
-            MessageBox.Show($"You died!!!\nScore: {currentScore}");
+            newGame = true;
+            HighScore.Text = currentScore.ToString();
+            Menu.Visibility = Visibility.Visible;
+            EndGameScreen.Visibility = Visibility.Visible;
         }
-
 
 
         private Point GetFoodPosition()
@@ -127,14 +141,64 @@ namespace Snake
             DrawSnakeFood();
             UpdateGameStatus();
         }
-        private void UpdateGameStatus()
+
+
+        private void Window_KeyUp(object sender, KeyEventArgs e)
         {
-            Time.Text = gameTimer.Interval.TotalMilliseconds.ToString();
-            Score.Text = currentScore.ToString();
+            SnakeDirection direction = snakeDirection;
+            switch (e.Key)
+            {
+                case Key.Up or Key.W:
+                    if (snakeDirection != SnakeDirection.Down)
+                    {
+                        snakeDirection = SnakeDirection.Up;
+                    }
+                    break;
+                case Key.Down or Key.S:
+                    if (snakeDirection != SnakeDirection.Up)
+                    {
+                        snakeDirection = SnakeDirection.Down;
+                    }
+                    break;
+                case Key.Left or Key.A:
+                    if (snakeDirection != SnakeDirection.Right)
+                    {
+                        snakeDirection = SnakeDirection.Left;
+                    }
+                    break;
+                case Key.Right or Key.D:
+                    if (snakeDirection != SnakeDirection.Left)
+                    {
+                        snakeDirection = SnakeDirection.Right;
+                    }
+                    break;
+                case Key.R:
+                    gameTimer.IsEnabled = false;
+                    newGame = true;
+                    StartNewGame();
+                    gameTimer.IsEnabled = true;
+                    break;
+                case Key.Escape:
+                    if (gameTimer.IsEnabled)
+                    {
+                        gameTimer.IsEnabled = false;
+                        Menu.Visibility = Visibility.Visible;
+                        MainMenu.Visibility = Visibility.Visible;
+                    }
+                    else
+                    {
+                        Menu.Visibility = Visibility.Collapsed;
+                        HighScoreScreen.Visibility = Visibility.Collapsed;
+                        gameTimer.IsEnabled = true;
+                    }
+                    break;
+            }
+            if (direction != snakeDirection && gameTimer.IsEnabled)
+            {
+                MoveSnake();
+            }
+
         }
-
-
-
         private void MoveSnake()
         {
             while (snakeparts.Count >= snakeLength)
@@ -197,129 +261,90 @@ namespace Snake
                 }
             }
         }
-        private void Window_KeyUp(object sender, KeyEventArgs e)
+        private void UpdateGameStatus()
         {
-            SnakeDirection direction = snakeDirection;
-            switch (e.Key)
-            {
-                case Key.Up or Key.W:
-                    if (snakeDirection != SnakeDirection.Down)
-                    {
-                        snakeDirection = SnakeDirection.Up;
-                    }
-                    break;
-                case Key.Down or Key.S:
-                    if (snakeDirection != SnakeDirection.Up)
-                    {
-                        snakeDirection = SnakeDirection.Down;
-                    }
-                    break;
-                case Key.Left or Key.A:
-                    if (snakeDirection != SnakeDirection.Right)
-                    {
-                        snakeDirection = SnakeDirection.Left;
-                    }
-                    break;
-                case Key.Right or Key.D:
-                    if (snakeDirection != SnakeDirection.Left)
-                    {
-                        snakeDirection = SnakeDirection.Right;
-                    }
-                    break;
-                case Key.R:
-                    StartNewGame();
-                    break;
-                case Key.Escape:
-                    if (gameTimer.IsEnabled)
-                    {
-                        gameTimer.IsEnabled = false;
-                        MainMenu.Visibility = Visibility.Visible;
-                    }
-                    else
-                    {
-                        MainMenu.Visibility = Visibility.Collapsed;
-                        gameTimer.IsEnabled = true;
-                    }
-                    break;
-            }
-            if (direction != snakeDirection && gameTimer.IsEnabled)
-            {
-                MoveSnake();
-            }
-
+            Time.Text = gameTimer.Interval.TotalMilliseconds.ToString();
+            Score.Text = currentScore.ToString();
         }
+
 
         private void StartGame_Click(object sender, RoutedEventArgs e)
         {
-            MainMenu.Visibility = Visibility.Collapsed;
+            Menu.Visibility = Visibility.Collapsed;
+            StartNewGame();
             gameTimer.IsEnabled = true;
+        }
+        private void ShowHighscore_Click(object sender, RoutedEventArgs e)
+        {
+            MainMenu.Visibility = Visibility.Collapsed;
+            HighScoreScreen.Visibility = Visibility.Visible;
+        }
+        private void HideHighScoreScreen_Click(object sender, RoutedEventArgs e)
+        {
+            HighScoreScreen.Visibility = Visibility.Collapsed;
+            MainMenu.Visibility = Visibility.Visible;
+        }
+        private void HideEndScreen_Click(object sender, RoutedEventArgs e)
+        {
+            HideEndScreen();
+        }
+        private void HideEndScreen()
+        {
+            EndGameScreen.Visibility = Visibility.Collapsed;
+            MainMenu.Visibility = Visibility.Visible;
+        }
+
+
+        private void SaveScore_Click(object sender, RoutedEventArgs e)
+        {
+            highscore.SaveScore(scoreName.Text, currentScore);
+            ViewModel.SnakeScores.Add(new(scoreName.Text, currentScore));
+            //Scores = new(Scores.OrderByDescending(score => score.Score));
+            //HighScoreGrid.ItemsSource = Scores;
+            HideEndScreen();
+        }
+        private void LoadState_Click(object sender, RoutedEventArgs e)
+        {
+
+            SaveState saveState = new();
+            Clusterfuck? clusterfuck = saveState.ReadScore(SnakeSquareSize, foodBrush);
+            if (clusterfuck != null)
+            {
+                ClearArena();
+                snakeparts = clusterfuck.Snakeparts;
+                snakeLength = clusterfuck.SnakeLength;
+                snakeFood = clusterfuck.SnakeFood;
+                gameTimer.Interval = clusterfuck.GameTimer.Interval;
+                currentScore = clusterfuck.CurrentScore;
+                snakeDirection = clusterfuck.SnakeDirection;
+                DrawSnakeFood();
+                DrawSnake();
+                newGame = false;
+                Menu.Visibility = Visibility.Collapsed;
+                gameTimer.IsEnabled = true;
+            }
+            else
+            {
+                newGame = true;
+            }
         }
         private void SaveState_Click(object sender, RoutedEventArgs e)
         {
             gameTimer.Stop();
-            OpenFileDialog fileDialog = new OpenFileDialog();
-            if (fileDialog.ShowDialog() == true)
+            Clusterfuck clusterfuck = new()
             {
-                Clusterfuck clusterfuck = new()
-                {
-                    CurrentScore = currentScore,
-                    GameTimer = gameTimer,
-                    SnakeDirection = snakeDirection,
-                    SnakeFood = snakeFood,
-                    SnakeLength = snakeLength,
-                    Snakeparts = snakeparts
-                };
-                SaveState save = new();
-                save.WriteScore(fileDialog.FileName, clusterfuck);
-            }
+                CurrentScore = currentScore,
+                GameTimer = gameTimer,
+                SnakeDirection = snakeDirection,
+                SnakeFood = snakeFood,
+                SnakeLength = snakeLength,
+                Snakeparts = snakeparts
+            };
+            SaveState save = new();
+            save.WriteScore(clusterfuck);
             gameTimer.Start();
         }
-        private void LoadScore_Click(object sender, RoutedEventArgs e)
-        {
-            OpenFileDialog fileDialog = new();
-            if (fileDialog.ShowDialog() == true)
-            {
-                gameTimer.IsEnabled = false;
-                ClearArena();
-                SaveState save = new();
-                try
-                {
-                    Clusterfuck clusterfuck = save.ReadScore(fileDialog.FileName, SnakeSquareSize, foodBrush);
-                    snakeparts = clusterfuck.Snakeparts;
-                    snakeLength = clusterfuck.SnakeLength;
-                    snakeFood = clusterfuck.SnakeFood;
-                    gameTimer.Interval = clusterfuck.GameTimer.Interval;
-                    currentScore = clusterfuck.CurrentScore;
-                    snakeDirection = clusterfuck.SnakeDirection;
-                    DrawSnakeFood();
-                    DrawSnake();
-                    MainMenu.Visibility = Visibility.Collapsed;
-                    gameTimer.IsEnabled = true;
-                }
-                catch (Exception)
-                {
-                    MessageBox.Show("The save file is corrupted");
-                }
-            }
-        }
 
-        private void ClearArena()
-        {
-            foreach (Snakepart snakepart in snakeparts)
-            {
-                if (snakepart.UiElement != null)
-                {
-                    Arena.Children.Remove(snakepart.UiElement);
-                }
-            }
-            if (snakeFood != null)
-            {
-                Arena.Children.Remove(snakeFood.UiElement);
-            }
-            snakeparts.Clear();
-            snakeFood = null;
-            currentScore = 0;
-        }
 
         private void DrawArena()
         {
@@ -382,6 +407,33 @@ namespace Snake
             Canvas.SetTop(snakeFood.UiElement, snakeFood.Position.Y);
             Canvas.SetLeft(snakeFood.UiElement, snakeFood.Position.X);
         }
+        private void ClearArena()
+        {
+            foreach (Snakepart snakepart in snakeparts)
+            {
+                if (snakepart.UiElement != null)
+                {
+                    Arena.Children.Remove(snakepart.UiElement);
+                }
+            }
+            if (snakeFood != null)
+            {
+                Arena.Children.Remove(snakeFood.UiElement);
+            }
+            snakeparts.Clear();
+            snakeFood = null;
+            currentScore = 0;
+        }
 
+
+    }
+
+    public class ViewModel
+    {
+        public ObservableCollection<SnakeScore> SnakeScores { get; set; }
+        public ViewModel(List<SnakeScore> scores)
+        {
+            SnakeScores = new ObservableCollection<SnakeScore>(scores);
+        }
     }
 }
