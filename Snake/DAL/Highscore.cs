@@ -16,6 +16,11 @@ namespace Snake.DAL
             path = "C:\\Users\\elias\\Downloads\\Snake scores\\Scores.txt";
         }
 
+        /// <summary>
+        /// Saves the score to a auto created file
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="score"></param>
         public void SaveScore(string name, int score)
         {
             if (!File.Exists(path))
@@ -29,6 +34,10 @@ namespace Snake.DAL
             }
         }
 
+        /// <summary>
+        /// Reads scores from file
+        /// </summary>
+        /// <returns>List of names and scores</returns>
         public List<SnakeScore> GetScores()
         {
             List<SnakeScore> scores = new List<SnakeScore>();
@@ -51,6 +60,9 @@ namespace Snake.DAL
             return scores;
         }
 
+        /// <summary>
+        /// Overwrites the data the file with an empty string
+        /// </summary>
         public void ClearScores()
         {
             if (File.Exists(path))

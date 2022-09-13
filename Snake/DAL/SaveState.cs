@@ -17,6 +17,10 @@ namespace Snake.DAL
 {
     public class SaveState
     {
+        /// <summary>
+        /// Writes Save data to text file
+        /// </summary>
+        /// <param name="clusterfuck"></param>
         public void WriteState(Clusterfuck clusterfuck)
         {
             SaveFileDialog fileDialog = new SaveFileDialog();
@@ -37,6 +41,12 @@ namespace Snake.DAL
             }
         }
 
+        /// <summary>
+        /// Reads save data from a save file
+        /// </summary>
+        /// <param name="snakeSquareSize"></param>
+        /// <param name="brush"></param>
+        /// <returns>The save if the file is correctly formatted</returns>
         public Clusterfuck? ReadState(int snakeSquareSize, Brush brush)
         {
             OpenFileDialog fileDialog = new();

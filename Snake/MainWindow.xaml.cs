@@ -32,6 +32,8 @@ namespace Snake
     /// </summary>
     public partial class MainWindow : Window
     {
+
+        #region Fields
         private SolidColorBrush snakeBodyBrush;
         private SolidColorBrush snakeHeadBrush;
         private SolidColorBrush foodBrush;
@@ -50,13 +52,15 @@ namespace Snake
         private SoundPlayer eatSound;
         private Highscore highscore;
         private bool Muted;
+        #endregion
 
-        public ViewModel ViewModel { get; set; }
-
+        #region Constants
         const int SnakeSquareSize = 20;
         const int SnakeStartLength = 3;
         const int SnakeStartSpeed = 200;
-        const int SnakeSpeedThreshold = 100;
+        const int SnakeSpeedThreshold = 100; 
+        #endregion
+        public ViewModel ViewModel { get; set; }
 
         public MainWindow()
         {
@@ -84,10 +88,30 @@ namespace Snake
         }
         public enum SnakeDirection { Left, Right, Up, Down }
 
+        /// <summary>
+        /// Calls DrawArena
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Window_ContentRendered(object sender, EventArgs e)
         {
             DrawArena();
         }
+
+        /// <summary>
+        /// Moves snake every tick and updates game status
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void GameTimer_Tick(object sender, EventArgs e)
+        {
+            MoveSnake();
+            UpdateGameStatus();
+        }
+
+        /// <summary>
+        /// Starts a new game
+        /// </summary>
         private void StartNewGame()
         {
             if (newGame)
@@ -106,11 +130,87 @@ namespace Snake
                 DrawSnakeFood();
             }
         }
-        private void GameTimer_Tick(object sender, EventArgs e)
+
+        /// <summary>
+        /// Moves the snake in a given direction
+        /// </summary>
+        private void MoveSnake()
         {
-            MoveSnake();
-            UpdateGameStatus();
+            while (snakeparts.Count >= snakeLength)
+            {
+                Arena.Children.Remove(snakeparts[0].UiElement);
+                snakeparts.RemoveAt(0);
+            }
+
+            foreach (Snakepart snakepart in snakeparts)
+            {
+                (snakepart.UiElement as Rectangle).Fill = snakeBodyBrush;
+                snakepart.IsHead = false;
+            }
+
+            Snakepart snakeHead = snakeparts.Last();
+            double x = snakeHead.Position.X;
+            double y = snakeHead.Position.Y;
+            switch (snakeDirection)
+            {
+                case SnakeDirection.Left:
+                    x -= SnakeSquareSize;
+                    break;
+                case SnakeDirection.Right:
+                    x += SnakeSquareSize;
+                    break;
+                case SnakeDirection.Up:
+                    y -= SnakeSquareSize;
+                    break;
+                case SnakeDirection.Down:
+                    y += SnakeSquareSize;
+                    break;
+            }
+            snakeparts.Add(new()
+            {
+                IsHead = true,
+                Position = new(x, y),
+            });
+            DrawSnake();
+            CollisionCheck();
         }
+
+        /// <summary>
+        /// Checks for collisions with food, body and walls
+        /// </summary>
+        private void CollisionCheck()
+        {
+            Snakepart snakeHead = snakeparts.Last();
+            if ((snakeHead.Position.X == snakeFood.Position.X) && (snakeHead.Position.Y == snakeFood.Position.Y))
+            {
+                EatSnakeFood();
+            }
+
+            if ((snakeHead.Position.Y < Arena.MinHeight) || (snakeHead.Position.Y >= Arena.ActualHeight) ||
+                (snakeHead.Position.X < Arena.MinWidth) || (snakeHead.Position.X >= Arena.ActualWidth))
+            {
+                EndGame();
+            }
+
+            foreach (Snakepart snakepart in snakeparts.Take(snakeparts.Count - 1))
+            {
+                if ((snakeHead.Position.X == snakepart.Position.X) && (snakeHead.Position.Y == snakepart.Position.Y))
+                {
+                    EndGame();
+                }
+            }
+        }
+        private void UpdateGameStatus()
+        {
+            Time.Text = gameTimer.Interval.TotalMilliseconds.ToString();
+            Score.Text = currentScore.ToString();
+        }
+
+
+
+        /// <summary>
+        /// Ends the game
+        /// </summary>
         private void EndGame()
         {
             gameTimer.IsEnabled = false;
@@ -128,7 +228,10 @@ namespace Snake
             EndGameScreen.Visibility = Visibility.Visible;
         }
 
-
+        /// <summary>
+        /// Gets the food position
+        /// </summary>
+        /// <returns>A Point with food position</returns>
         private Point GetFoodPosition()
         {
             int maxX = (int)(Arena.ActualWidth / SnakeSquareSize);
@@ -146,6 +249,10 @@ namespace Snake
 
             return new(foodX, foodY);
         }
+
+        /// <summary>
+        /// Removes the eaten food and adds to score
+        /// </summary>
         private void EatSnakeFood()
         {
             snakeLength++;
@@ -165,6 +272,32 @@ namespace Snake
             UpdateGameStatus();
         }
 
+        /// <summary>
+        /// Hides all screen menus
+        /// </summary>
+        private void HideAllScreens()
+        {
+            Menu.Visibility = Visibility.Hidden;
+            HighScoreScreen.Visibility = Visibility.Hidden;
+            EndGameScreen.Visibility = Visibility.Hidden;
+        }
+
+        /// <summary>
+        /// Hudes the end screen menu
+        /// </summary>
+        private void HideEndScreen()
+        {
+            EndGameScreen.Visibility = Visibility.Collapsed;
+            MainMenu.Visibility = Visibility.Visible;
+        }
+
+
+        #region Events
+        /// <summary>
+        /// Changes the direction, pauses the game or restarts the game
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Window_KeyUp(object sender, KeyEventArgs e)
         {
             SnakeDirection direction = snakeDirection;
@@ -231,116 +364,68 @@ namespace Snake
             }
 
         }
-        private void MoveSnake()
-        {
-            while (snakeparts.Count >= snakeLength)
-            {
-                Arena.Children.Remove(snakeparts[0].UiElement);
-                snakeparts.RemoveAt(0);
-            }
 
-            foreach (Snakepart snakepart in snakeparts)
-            {
-                (snakepart.UiElement as Rectangle).Fill = snakeBodyBrush;
-                snakepart.IsHead = false;
-            }
-
-            Snakepart snakeHead = snakeparts.Last();
-            double x = snakeHead.Position.X;
-            double y = snakeHead.Position.Y;
-            switch (snakeDirection)
-            {
-                case SnakeDirection.Left:
-                    x -= SnakeSquareSize;
-                    break;
-                case SnakeDirection.Right:
-                    x += SnakeSquareSize;
-                    break;
-                case SnakeDirection.Up:
-                    y -= SnakeSquareSize;
-                    break;
-                case SnakeDirection.Down:
-                    y += SnakeSquareSize;
-                    break;
-            }
-            snakeparts.Add(new()
-            {
-                IsHead = true,
-                Position = new(x, y),
-            });
-            DrawSnake();
-            CollisionCheck();
-        }
-        private void CollisionCheck()
-        {
-            Snakepart snakeHead = snakeparts.Last();
-            if ((snakeHead.Position.X == snakeFood.Position.X) && (snakeHead.Position.Y == snakeFood.Position.Y))
-            {
-                EatSnakeFood();
-            }
-
-            if ((snakeHead.Position.Y < Arena.MinHeight) || (snakeHead.Position.Y >= Arena.ActualHeight) ||
-                (snakeHead.Position.X < Arena.MinWidth) || (snakeHead.Position.X >= Arena.ActualWidth))
-            {
-                EndGame();
-            }
-
-            foreach (Snakepart snakepart in snakeparts.Take(snakeparts.Count - 1))
-            {
-                if ((snakeHead.Position.X == snakepart.Position.X) && (snakeHead.Position.Y == snakepart.Position.Y))
-                {
-                    EndGame();
-                }
-            }
-        }
-        private void UpdateGameStatus()
-        {
-            Time.Text = gameTimer.Interval.TotalMilliseconds.ToString();
-            Score.Text = currentScore.ToString();
-        }
-
-
+        /// <summary>
+        /// Calls StartNewGame
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void StartGame_Click(object sender, RoutedEventArgs e)
         {
             Menu.Visibility = Visibility.Collapsed;
             StartNewGame();
             gameTimer.IsEnabled = true;
         }
+
+        /// <summary>
+        /// Shows the high score menu
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ShowHighscore_Click(object sender, RoutedEventArgs e)
         {
             MainMenu.Visibility = Visibility.Collapsed;
             HighScoreScreen.Visibility = Visibility.Visible;
         }
+
+        /// <summary>
+        /// Hides the high score menu
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void HideHighScoreScreen_Click(object sender, RoutedEventArgs e)
         {
             HighScoreScreen.Visibility = Visibility.Collapsed;
             MainMenu.Visibility = Visibility.Visible;
         }
+
+        /// <summary>
+        /// Calls HideEndScreen
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void HideEndScreen_Click(object sender, RoutedEventArgs e)
         {
             HideEndScreen();
         }
-        private void HideEndScreen()
-        {
-            EndGameScreen.Visibility = Visibility.Collapsed;
-            MainMenu.Visibility = Visibility.Visible;
-        }
-        private void HideAllScreens()
-        {
-            Menu.Visibility = Visibility.Hidden;
-            HighScoreScreen.Visibility = Visibility.Hidden;
-            EndGameScreen.Visibility = Visibility.Hidden;
-        }
 
-
+        /// <summary>
+        /// Saves the score
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void SaveScore_Click(object sender, RoutedEventArgs e)
         {
             highscore.SaveScore(scoreName.Text, currentScore);
             ViewModel.SnakeScores.Add(new(scoreName.Text, currentScore));
-            //Scores = new(Scores.OrderByDescending(score => score.Score));
-            //HighScoreGrid.ItemsSource = Scores;
             HideEndScreen();
         }
+
+        /// <summary>
+        /// Loads a save file
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void LoadState_Click(object sender, RoutedEventArgs e)
         {
 
@@ -367,6 +452,12 @@ namespace Snake
             //    newGame = true;
             //}
         }
+
+        /// <summary>
+        /// Saves state to file
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void SaveState_Click(object sender, RoutedEventArgs e)
         {
             if (!newGame)
@@ -389,9 +480,54 @@ namespace Snake
                     gameTimer.IsEnabled = true;
                 }
             }
+        } 
+   
+        
+        /// <summary>
+        /// Mutes the game
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Mute_Click(object sender, RoutedEventArgs e)
+        {
+            Task.Run(() => backgroundSound.Stop());
+            Muted = true;
+            Mute.Visibility = Visibility.Visible;
+            Unmute.Visibility = Visibility.Collapsed;
         }
 
+        /// <summary>
+        /// Unmutes the game
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Unmute_Click(object sender, RoutedEventArgs e)
+        {
+            if (gameTimer.IsEnabled)
+            {
+                backgroundSound.Play();
+            }
+            Muted = false;
+            Unmute.Visibility = Visibility.Visible;
+            Mute.Visibility = Visibility.Collapsed;
+        }
 
+        /// <summary>
+        /// Clears the high score
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ClearHighScore_Click(object sender, RoutedEventArgs e)
+        {
+            highscore.ClearScores();
+            ViewModel.SnakeScores.Clear();
+        }
+        #endregion
+
+        /// <summary>
+        /// Plays one sound
+        /// </summary>
+        /// <param name="sound"></param>
         private void PlaySound(SoundPlayer sound)
         {
             if (!Muted)
@@ -399,6 +535,12 @@ namespace Snake
                 sound.Play();
             }
         }
+
+        /// <summary>
+        /// Plays one sound and backgroundsound
+        /// </summary>
+        /// <param name="sound"></param>
+        /// <param name="background"></param>
         private void PlaySound(SoundPlayer sound, SoundPlayer background)
         {
             if (!Muted)
@@ -415,6 +557,10 @@ namespace Snake
         }
 
 
+        #region Canvas
+        /// <summary>
+        /// Draws the arena on canvas
+        /// </summary>
         private void DrawArena()
         {
             bool isOdd = false;
@@ -447,6 +593,10 @@ namespace Snake
                 }
             }
         }
+
+        /// <summary>
+        /// Draws the snake on canvas
+        /// </summary>
         private void DrawSnake()
         {
             foreach (Snakepart snakepart in snakeparts)
@@ -465,6 +615,10 @@ namespace Snake
                 }
             }
         }
+
+        /// <summary>
+        /// Draws the food on canvas
+        /// </summary>
         private void DrawSnakeFood()
         {
             snakeFood = new()
@@ -476,6 +630,10 @@ namespace Snake
             Canvas.SetTop(snakeFood.UiElement, snakeFood.Position.Y);
             Canvas.SetLeft(snakeFood.UiElement, snakeFood.Position.X);
         }
+
+        /// <summary>
+        /// Clears the arena for snake and food
+        /// </summary>
         private void ClearArena()
         {
             foreach (Snakepart snakepart in snakeparts)
@@ -493,30 +651,8 @@ namespace Snake
             snakeFood = null;
             currentScore = 0;
         }
+        #endregion
 
-
-        private void Mute_Click(object sender, RoutedEventArgs e)
-        {
-            Task.Run(() => backgroundSound.Stop());
-            Muted = true;
-            Mute.Visibility = Visibility.Visible;
-            Unmute.Visibility = Visibility.Collapsed;
-        }
-        private void Unmute_Click(object sender, RoutedEventArgs e)
-        {
-            if (gameTimer.IsEnabled)
-            {
-                backgroundSound.Play();
-            }
-            Muted = false;
-            Unmute.Visibility = Visibility.Visible;
-            Mute.Visibility = Visibility.Collapsed;
-        }
-        private void ClearHighScore_Click(object sender, RoutedEventArgs e)
-        {
-            highscore.ClearScores();
-            ViewModel.SnakeScores.Clear();
-        }
 
 
     }
