@@ -17,9 +17,12 @@ namespace Snake.DAL
 {
     public class SaveState
     {
-        public void WriteScore(Clusterfuck clusterfuck)
+        public void WriteState(Clusterfuck clusterfuck)
         {
             SaveFileDialog fileDialog = new SaveFileDialog();
+                fileDialog.Filter = "Text Files (*.txt)|*.txt";
+                fileDialog.DefaultExt = "txt";
+                fileDialog.AddExtension = true;
             if (fileDialog.ShowDialog() == true)
             {
                 using (StreamWriter sw = new StreamWriter(fileDialog.FileName))
@@ -34,7 +37,7 @@ namespace Snake.DAL
             }
         }
 
-        public Clusterfuck? ReadScore(int snakeSquareSize, Brush brush)
+        public Clusterfuck? ReadState(int snakeSquareSize, Brush brush)
         {
             OpenFileDialog fileDialog = new();
             if (fileDialog.ShowDialog() == true)

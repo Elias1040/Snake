@@ -329,7 +329,7 @@ namespace Snake
         {
             Menu.Visibility = Visibility.Hidden;
             HighScoreScreen.Visibility = Visibility.Hidden;
-            EndGameScreen.Visibility= Visibility.Hidden;
+            EndGameScreen.Visibility = Visibility.Hidden;
         }
 
 
@@ -345,7 +345,7 @@ namespace Snake
         {
 
             SaveState saveState = new();
-            Clusterfuck? clusterfuck = saveState.ReadScore(SnakeSquareSize, foodBrush);
+            Clusterfuck? clusterfuck = saveState.ReadState(SnakeSquareSize, foodBrush);
             if (clusterfuck != null)
             {
                 ClearArena();
@@ -369,19 +369,26 @@ namespace Snake
         }
         private void SaveState_Click(object sender, RoutedEventArgs e)
         {
-            gameTimer.Stop();
-            Clusterfuck clusterfuck = new()
+            if (!newGame)
             {
-                CurrentScore = currentScore,
-                GameTimer = gameTimer,
-                SnakeDirection = snakeDirection,
-                SnakeFood = snakeFood,
-                SnakeLength = snakeLength,
-                Snakeparts = snakeparts
-            };
-            SaveState save = new();
-            save.WriteScore(clusterfuck);
-            gameTimer.Start();
+                bool gameState = gameTimer.IsEnabled;
+                gameTimer.IsEnabled = false;
+                Clusterfuck clusterfuck = new()
+                {
+                    CurrentScore = currentScore,
+                    GameTimer = gameTimer,
+                    SnakeDirection = snakeDirection,
+                    SnakeFood = snakeFood,
+                    SnakeLength = snakeLength,
+                    Snakeparts = snakeparts
+                };
+                SaveState save = new();
+                save.WriteState(clusterfuck);
+                if (gameState)
+                {
+                    gameTimer.IsEnabled = true;
+                }
+            }
         }
 
 
