@@ -7,7 +7,6 @@
         mc:Ignorable="d"
         Title="MainWindow" SizeToContent="WidthAndHeight" ContentRendered="Window_ContentRendered" ResizeMode="NoResize"
         KeyUp="Window_KeyUp" x:Name="SnakeWindow">
-
     <Window.Resources>
         <CollectionViewSource Source="{Binding SnakeScores}" x:Key="viewSource">
             <CollectionViewSource.SortDescriptions>
@@ -37,8 +36,14 @@
                     <Image Source="/Images/Mute.png"/>
                 </Button>
             </StackPanel>
-            <TextBlock x:Name="Score" FontSize="30" FontWeight="Bold" FontFamily="Consolas" TextAlignment="Center" Grid.Column="1" Foreground="White"></TextBlock>
-            <TextBlock x:Name="Time" FontSize="30" FontWeight="Bold" FontFamily="Consolas" Grid.Column="2" Foreground="White"></TextBlock>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left">
+                <TextBlock FontSize="20" VerticalAlignment="Center" Margin="0,0,15,0" FontWeight="Bold" FontFamily="Consolas" Foreground="White">Score:</TextBlock>
+                <TextBlock x:Name="Score" VerticalAlignment="Center" FontSize="30" FontWeight="Bold" FontFamily="Consolas" TextAlignment="Center" Foreground="White"></TextBlock>
+            </StackPanel>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Left">
+                <TextBlock FontSize="20" VerticalAlignment="Center" Margin="0,0,15,0" FontWeight="Bold" FontFamily="Consolas" Foreground="White">Speed:</TextBlock>
+                <TextBlock x:Name="Time" VerticalAlignment="Center" FontSize="30" FontWeight="Bold" FontFamily="Consolas" Foreground="White"></TextBlock>
+            </StackPanel>
         </Grid>
         <Border BorderThickness="5" BorderBrush="DarkGreen" Grid.Row="1">
             <Canvas>
