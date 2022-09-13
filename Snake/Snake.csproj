@@ -7,4 +7,22 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="Images\Mute.png" />
+    <None Remove="Images\Save.png" />
+    <None Remove="Images\Unmute.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Images\Mute.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\Unmute.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\Save.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

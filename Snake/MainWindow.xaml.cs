@@ -48,9 +48,10 @@ namespace Snake
         private SoundPlayer deadSound;
         private SoundPlayer turnSound;
         private SoundPlayer eatSound;
+        private Highscore highscore;
+        private bool Muted;
 
         public ViewModel ViewModel { get; set; }
-        private Highscore highscore;
 
         const int SnakeSquareSize = 20;
         const int SnakeStartLength = 3;
@@ -73,6 +74,7 @@ namespace Snake
             snakeHeadBrush = Brushes.Yellow;
             foodBrush = Brushes.Red;
             currentScore = 0;
+            Muted = false;
             backgroundSound = new(@"C:\Users\elias\source\repos\Snake\Snake\BackgroundMusic.wav");
             respawnSound = new(@"C:\Users\elias\source\repos\Snake\Snake\ResetSound.wav");
             deadSound = new(@"C:\Users\elias\source\repos\Snake\Snake\DeadSound.wav");
@@ -99,7 +101,7 @@ namespace Snake
                     Position = new(SnakeSquareSize * 5, SnakeSquareSize * 5),
                 });
                 gameTimer.Interval = TimeSpan.FromMilliseconds(SnakeStartSpeed);
-                PlaySounds(respawnSound);
+                PlaySound(respawnSound, backgroundSound);
                 DrawSnake();
                 DrawSnakeFood();
             }
@@ -112,7 +114,7 @@ namespace Snake
         private void EndGame()
         {
             gameTimer.IsEnabled = false;
-            PlaySounds(deadSound);
+            PlaySound(deadSound);
             foreach (Snakepart snakepart in snakeparts)
             {
                 if (snakepart.UiElement != null)
@@ -147,10 +149,17 @@ namespace Snake
         private void EatSnakeFood()
         {
             snakeLength++;
-            currentScore++;
+            if (currentScore >= 20)
+            {
+                currentScore += (int)(currentScore * 0.1);
+            }
+            else
+            {
+                currentScore++;
+            }
             int interval = Math.Max(SnakeSpeedThreshold, (int)gameTimer.Interval.TotalMilliseconds - (currentScore * 2));
             gameTimer.Interval = TimeSpan.FromMilliseconds(interval);
-            PlaySounds(eatSound);
+            PlaySound(eatSound, backgroundSound);
             Arena.Children.Remove(snakeFood.UiElement);
             DrawSnakeFood();
             UpdateGameStatus();
@@ -188,6 +197,7 @@ namespace Snake
                 case Key.R:
                     gameTimer.IsEnabled = false;
                     newGame = true;
+                    HideAllScreens();
                     StartNewGame();
                     gameTimer.IsEnabled = true;
                     break;
@@ -195,7 +205,10 @@ namespace Snake
                     if (gameTimer.IsEnabled)
                     {
                         gameTimer.IsEnabled = false;
-                        backgroundSound.Stop();
+                        if (!Muted)
+                        {
+                            backgroundSound.Stop();
+                        }
                         Menu.Visibility = Visibility.Visible;
                         MainMenu.Visibility = Visibility.Visible;
                     }
@@ -203,7 +216,10 @@ namespace Snake
                     {
                         Menu.Visibility = Visibility.Collapsed;
                         HighScoreScreen.Visibility = Visibility.Collapsed;
-                        backgroundSound.Play();
+                        if (!Muted)
+                        {
+                            backgroundSound.Play();
+                        }
                         gameTimer.IsEnabled = true;
                     }
                     break;
@@ -309,6 +325,12 @@ namespace Snake
             EndGameScreen.Visibility = Visibility.Collapsed;
             MainMenu.Visibility = Visibility.Visible;
         }
+        private void HideAllScreens()
+        {
+            Menu.Visibility = Visibility.Hidden;
+            HighScoreScreen.Visibility = Visibility.Hidden;
+            EndGameScreen.Visibility= Visibility.Hidden;
+        }
 
 
         private void SaveScore_Click(object sender, RoutedEventArgs e)
@@ -337,7 +359,7 @@ namespace Snake
                 DrawSnake();
                 newGame = false;
                 Menu.Visibility = Visibility.Collapsed;
-                PlaySounds(respawnSound);
+                PlaySound(respawnSound, backgroundSound);
                 gameTimer.IsEnabled = true;
             }
             //else
@@ -363,11 +385,26 @@ namespace Snake
         }
 
 
-        private void PlaySounds(SoundPlayer sound)
+        private void PlaySound(SoundPlayer sound)
         {
-            sound.LoadAsync();
-            backgroundSound.LoadAsync();
-            Task.Run(() => { sound.PlaySync(); backgroundSound.PlayLooping(); });
+            if (!Muted)
+            {
+                sound.Play();
+            }
+        }
+        private void PlaySound(SoundPlayer sound, SoundPlayer background)
+        {
+            if (!Muted)
+            {
+                Task.Run(() =>
+                {
+                    sound.PlaySync();
+                    if (gameTimer.IsEnabled && !Muted)
+                    {
+                        background.PlayLooping();
+                    }
+                });
+            }
         }
 
 
@@ -448,6 +485,30 @@ namespace Snake
             snakeparts.Clear();
             snakeFood = null;
             currentScore = 0;
+        }
+
+
+        private void Mute_Click(object sender, RoutedEventArgs e)
+        {
+            Task.Run(() => backgroundSound.Stop());
+            Muted = true;
+            Mute.Visibility = Visibility.Visible;
+            Unmute.Visibility = Visibility.Collapsed;
+        }
+        private void Unmute_Click(object sender, RoutedEventArgs e)
+        {
+            if (gameTimer.IsEnabled)
+            {
+                backgroundSound.Play();
+            }
+            Muted = false;
+            Unmute.Visibility = Visibility.Visible;
+            Mute.Visibility = Visibility.Collapsed;
+        }
+        private void ClearHighScore_Click(object sender, RoutedEventArgs e)
+        {
+            highscore.ClearScores();
+            ViewModel.SnakeScores.Clear();
         }
 
 

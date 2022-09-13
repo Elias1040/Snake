@@ -10,13 +10,19 @@ namespace Snake.DAL
 {
     public class Highscore
     {
+        private string path;
+        public Highscore()
+        {
+            path = "C:\\Users\\elias\\Downloads\\Snake scores\\Scores.txt";
+        }
+
         public void SaveScore(string name, int score)
         {
-            if (!File.Exists("C:\\Users\\elias\\Downloads\\Snake scores\\Scores.txt"))
+            if (!File.Exists(path))
             {
-                File.Create("C:\\Users\\elias\\Downloads\\Snake scores\\Scores.txt");
+                File.Create(path);
             }
-            using (StreamWriter sw = new("C:\\Users\\elias\\Downloads\\Snake scores\\Scores.txt", true))
+            using (StreamWriter sw = new(path, true))
             {
                 sw.WriteLine(name);
                 sw.WriteLine(score);
@@ -43,6 +49,18 @@ namespace Snake.DAL
 
             }
             return scores;
+        }
+
+        public void ClearScores()
+        {
+            if (File.Exists(path))
+            {
+                File.WriteAllText(path, string.Empty);
+            }
+            else
+            {
+                File.Create(path);
+            }
         }
     }
 }

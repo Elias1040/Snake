@@ -26,7 +26,17 @@
                 <ColumnDefinition/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <Button Grid.Column="0" FontSize="18" Height="30" Width="110" Click="SaveState_Click">Save</Button>
+            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                <Button Margin="20, 0, 0, 0" Height="30" Width="30" Click="SaveState_Click">
+                    <Image Source="/Images/Save.png"/>
+                </Button>
+                <Button x:Name="Unmute" Click="Mute_Click" Margin="10, 0, 0, 0" Height="30" Width="30">
+                    <Image Source="/Images/Unmute.png"/>
+                </Button>
+                <Button x:Name="Mute" Click="Unmute_Click" Margin="10, 0, 0, 0" Height="30" Width="30" Visibility="Hidden">
+                    <Image Source="/Images/Mute.png"/>
+                </Button>
+            </StackPanel>
             <TextBlock x:Name="Score" FontSize="30" FontWeight="Bold" FontFamily="Consolas" TextAlignment="Center" Grid.Column="1" Foreground="White"></TextBlock>
             <TextBlock x:Name="Time" FontSize="30" FontWeight="Bold" FontFamily="Consolas" Grid.Column="2" Foreground="White"></TextBlock>
         </Grid>
@@ -115,9 +125,9 @@
                             <RowDefinition Height="40"/>
                         </Grid.RowDefinitions>
                         <StackPanel Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="7" Grid.RowSpan="7" Background="White">
-                            <TextBlock FontSize="30" FontWeight="Bold" FontFamily="Consolas" TextAlignment="Center">High score</TextBlock>
+                            <TextBlock FontSize="30" FontWeight="Bold" FontFamily="Consolas" TextAlignment="Center">High scores</TextBlock>
                             <Border BorderThickness="0, 2, 0, 1" BorderBrush="Black">
-                                <DataGrid x:Name="HighScoreGrid" VerticalScrollBarVisibility="Auto" MaxHeight="180" ItemsSource="{Binding Source={StaticResource viewSource}}" GridLinesVisibility="None" Background="White" BorderThickness="0" HeadersVisibility="None" AutoGenerateColumns="False" Margin="0, 0, 0, 0">
+                                <DataGrid x:Name="HighScoreGrid" VerticalScrollBarVisibility="Auto" MaxHeight="180" Height="180" ItemsSource="{Binding Source={StaticResource viewSource}}" GridLinesVisibility="None" Background="White" BorderThickness="0" HeadersVisibility="None" AutoGenerateColumns="False" Margin="0, 0, 0, 0">
                                     <DataGrid.CellStyle>
                                         <Style TargetType="{x:Type DataGridCell}">
                                             <Setter Property="Margin" Value="0, 4" />
@@ -153,7 +163,10 @@
                                     </DataGrid.Columns>
                                 </DataGrid>
                             </Border>
-                            <Button Click="HideHighScoreScreen_Click" Margin="0, 15, 0, 0" Height="30" Width="130">Back</Button>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0, 15, 0, 0">
+                                <Button Click="HideHighScoreScreen_Click" Margin="0, 0, 10, 0" Height="30" Width="90">Back</Button>
+                                <Button Click="ClearHighScore_Click" Margin="0, 0, 0, 0" Height="30" Width="90">Clear scores</Button>
+                            </StackPanel>
                         </StackPanel>
                     </Grid>
                     <Grid x:Name="EndGameScreen" Visibility="Hidden">
