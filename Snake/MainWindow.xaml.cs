@@ -48,7 +48,7 @@ namespace Snake
         private SoundPlayer backgroundSound;
         private SoundPlayer respawnSound;
         private SoundPlayer deadSound;
-        private SoundPlayer turnSound;
+        //private SoundPlayer turnSound;
         private SoundPlayer eatSound;
         private Highscore highscore;
         private bool Muted;
@@ -82,10 +82,12 @@ namespace Snake
             backgroundSound = new(@"C:\Users\elias\source\repos\Snake\Snake\BackgroundMusic.wav");
             respawnSound = new(@"C:\Users\elias\source\repos\Snake\Snake\ResetSound.wav");
             deadSound = new(@"C:\Users\elias\source\repos\Snake\Snake\DeadSound.wav");
-            turnSound = new(@"C:\Users\elias\source\repos\Snake\Snake\TurnSound.wav");
+            //turnSound = new(@"C:\Users\elias\source\repos\Snake\Snake\TurnSound.wav");
             eatSound = new(@"C:\Users\elias\source\repos\Snake\Snake\EatSound.wav");
             gameTimer.Tick += GameTimer_Tick;
         }
+
+
         public enum SnakeDirection { Left, Right, Up, Down }
 
         /// <summary>
@@ -577,7 +579,7 @@ namespace Snake
             bool isFull = false;
             while (!isFull)
             {
-                Rectangle rect = new Rectangle()
+                Rectangle rect = new()
                 {
                     Fill = isOdd ? Brushes.YellowGreen : Brushes.GreenYellow,
                     Height = SnakeSquareSize,
@@ -661,16 +663,5 @@ namespace Snake
         }
         #endregion
 
-
-
-    }
-
-    public class ViewModel
-    {
-        public ObservableCollection<SnakeScore> SnakeScores { get; set; }
-        public ViewModel(List<SnakeScore> scores)
-        {
-            SnakeScores = new ObservableCollection<SnakeScore>(scores);
-        }
     }
 }

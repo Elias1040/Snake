@@ -23,13 +23,15 @@ namespace Snake.DAL
         /// <param name="clusterfuck"></param>
         public void WriteState(Clusterfuck clusterfuck)
         {
-            SaveFileDialog fileDialog = new SaveFileDialog();
-                fileDialog.Filter = "Text Files (*.txt)|*.txt";
-                fileDialog.DefaultExt = "txt";
-                fileDialog.AddExtension = true;
+            SaveFileDialog fileDialog = new()
+            {
+                Filter = "Text Files (*.txt)|*.txt",
+                DefaultExt = "txt",
+                AddExtension = true
+            };
             if (fileDialog.ShowDialog() == true)
             {
-                using (StreamWriter sw = new StreamWriter(fileDialog.FileName))
+                using (StreamWriter sw = new(fileDialog.FileName))
                 {
                     sw.WriteLine($"Snakelength: {clusterfuck.SnakeLength}");
                     sw.WriteLine($"Milliseconds: {clusterfuck.GameTimer.Interval.TotalMilliseconds}");
@@ -52,11 +54,11 @@ namespace Snake.DAL
             OpenFileDialog fileDialog = new();
             if (fileDialog.ShowDialog() == true)
             {
-                using (StreamReader sr = new StreamReader(fileDialog.FileName))
+                using (StreamReader sr = new(fileDialog.FileName))
                 {
                     try
                     {
-                        Clusterfuck clusterfuck = new Clusterfuck();
+                        Clusterfuck clusterfuck = new();
                         clusterfuck.SnakeLength = Convert.ToInt32(sr.ReadLine().Split(": ")[1]);
                         TimeSpan timeSpan = TimeSpan.FromMilliseconds(Convert.ToDouble(sr.ReadLine().Split(": ")[1]));
                         clusterfuck.GameTimer = new() { Interval = timeSpan };
