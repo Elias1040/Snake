@@ -228,6 +228,7 @@ namespace Snake
             EndGameScreen.Visibility = Visibility.Visible;
         }
 
+        #region Food
         /// <summary>
         /// Gets the food position
         /// </summary>
@@ -271,7 +272,10 @@ namespace Snake
             DrawSnakeFood();
             UpdateGameStatus();
         }
+        #endregion
 
+
+        #region Hide
         /// <summary>
         /// Hides all screen menus
         /// </summary>
@@ -290,6 +294,7 @@ namespace Snake
             EndGameScreen.Visibility = Visibility.Collapsed;
             MainMenu.Visibility = Visibility.Visible;
         }
+        #endregion
 
 
         #region Events
@@ -524,6 +529,8 @@ namespace Snake
         }
         #endregion
 
+
+        #region Sound
         /// <summary>
         /// Plays one sound
         /// </summary>
@@ -554,7 +561,8 @@ namespace Snake
                     }
                 });
             }
-        }
+        } 
+        #endregion
 
 
         #region Canvas
